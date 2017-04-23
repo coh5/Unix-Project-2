@@ -131,10 +131,11 @@ char *line2(void)
 
 int main()
 {
-  	printf("$ ");
 	char *line;
 	char *array[10]; //prolly need to check for number of arguments later.
 	while(1) {
+		
+        printf("$ ");
 	
  	// Run command loop.
   	line = line2();
