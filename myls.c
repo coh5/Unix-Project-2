@@ -10,6 +10,7 @@
 #include <string.h>
 #include <time.h>
 #include <libgen.h>
+#include <dirent.h>
 
 int loption(char** argv)
 {
@@ -56,15 +57,55 @@ int main (int argc, char *argv[]) {
 
 	DIR *dp;
 	struct dirent *dirp;
+    	struct stat sb;
+	int i = 0;
+        int j, k = 100, count = -1;
+	char temp[100];
+	char sort[100][100];
 
 	if(argc ==1) dp = opendir ("./");
-	else if(argc ==2) dp = opendir(argv[1]);
-	//else if(argc ==3) printf("Test");
-	else if(strcmp(argv[1], "-l") == 0) loption(argv);
+	else if(argc ==2) {
+           dp = opendir(argv[1]);
+	   if (!dp) {
+	      printf("myls: cannot access %s: No such file or directory\n", argv[1]);
+	      return 0;
+           }
+           dp = opendir(argv[1]);
+	}
+	else if(argc ==3) {
+	   if(strcmp(argv[1], "-l") == 0) loption(argv);
+	}
 
 	
-	//if(argc < 3)
-	//while ((dirp = readdir(dp)) != NULL) printf("%s\n", dirp->d_name);
+	if(argc < 3) {
+	   while ((dirp = readdir(dp)) != NULL) count++;
+	   //printf("Count %d", count);
+	   rewinddir(dp);
+	   while ((dirp = readdir(dp)) != NULL) {
+	      if(strcmp(dirp->d_name, ".") == 0 || strcmp(dirp->d_name, "..") == 0);
+	      else strcpy(sort[i], dirp->d_name);
+	      i++;
+	   }
+  	for(k=0;k<=1000;k++) {
+  	for(i=0;i<=count;i++)
+           for(j=i+1;j<=count;j++){
+              if(strcmp(sort[i],sort[j])>0) {
+                 strcpy(temp,sort[i]);
+                 strcpy(sort[i],sort[j]);
+                 strcpy(sort[j],temp);
+              }
+           } 
+
+}
+	i = 0;
+	rewinddir(dp);
+ 	while ((dirp = readdir(dp)) != NULL) {
+ 	   printf("%s  ", sort[i]);
+	   i++;
+	}
+	}
+
+	printf("\n");
 
 	closedir(dp);
 	exit(0);
