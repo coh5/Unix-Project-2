@@ -8,18 +8,49 @@
 
 //This is not completed yet!
 
-void sh_execute()
+void sh_split(char *line)
 {
-	printf("sh_execute\n");
-	pid_t pid=fork();
+
+    int i = 0;
+    char *p = strtok (line, " ");
+    char *array[10];
+
+
+    while (p != NULL)
+    {
+        array[i++] = p;
+        p = strtok (NULL, " ");
+    }
+	
+	//printf("%d\n", i);
+
+    for (int b = 0; b < 3; ++b) 
+        printf("%s\n", array[b]);
+
+	array[i] = NULL;
+	//i = i - 1;
+	
+
+		pid_t pid=fork();
     if (pid==0) { /* child process */
-        static char *argv[]={"echo","Foo is my name.",NULL};
-        execvp("foo6",argv);
-        exit(127); /* only if execv fails */
+		//char *cmd = "./";
+		char cmd[50];
+		strcpy(cmd, "./");
+		strcat(cmd, array[0]);
+		
+		//printf("%s\n",cmd);
+		execvp(cmd, array);
     }
     else { /* pid!=0; parent process */
         waitpid(pid,0,0); /* wait for child to exit */
     }
+
+    //return 0;
+}
+
+void sh_execute()
+{
+	//not using this function yet
 }
 
 char *loop(void)
@@ -30,20 +61,28 @@ char *loop(void)
     if (getline(&line, &size, stdin) == -1) {
         printf("No line\n");
     } else {
-        printf("%s\n", line);
+	return line;
+        //printf("%s\n", line);
     }
 	
 }
 
+static char* skipwhite(char* b)
+{
+	//strchr(cmd, ' '); think you can use this to test
+	//while (test for spaces here) ++s;
+	return b;
+}
+
 int main(int argc, char **argv)
 {
-  	
+  	printf("$ ");
 	char *line;
  	// Run command loop.
   	line = loop();
 
-	sh_execute();    
-
+	sh_split(line);
+	//sh_execute();    
+	free(line);
   	return 0;
 }
-
