@@ -63,7 +63,7 @@ int main (int argc, char *argv[]) {
 	char temp[100];
 	char sort[100][100];
 
-	if(argc ==1) dp = opendir ("./");
+	if(argc ==1 || argv[1] == "|") dp = opendir ("./");
 	else if(argc ==2) {
            dp = opendir(argv[1]);
 	   if (!dp) {
@@ -84,7 +84,7 @@ int main (int argc, char *argv[]) {
 	   else printf("myls: Invalid option: Only supports -l");
 	}
 	else if(argc > 3) {
-	   printf("myls: Too many arguments: "ls [option] [file or dir]"\n");
+	   printf("myls: Too many arguments: ls [option] [file or dir]\n");
 	   return 0;
         }
 
@@ -108,6 +108,7 @@ int main (int argc, char *argv[]) {
            } 
 
 }
+
 	i = 0;
 	rewinddir(dp);
  	while ((dirp = readdir(dp)) != NULL) {
