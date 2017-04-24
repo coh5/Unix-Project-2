@@ -7,157 +7,168 @@
 #include <stdio.h>
 #include <string.h>
 
-//This is not completed yet!
-// ERRORS
-//  ././ can execute the execution!!
+
+int saved_stdout;
+int sh_stoutput(){
+	return saved_stdout;
+}
+
 
 void sh_split(char *line, char **array)
 {
+    int i = 0; //This is an index for the array
 	
-    //char buf[] ="abc qwe ccd";
-    int i = 0;
     char *p = strtok (line, " ");
-    //char *array[10];
-
-
-	//message = strcat("TEXT " , var);
-	//I need to figure out here how to add redirection into files
 	
+
+
     while (p != NULL)
     {
-		//had the argument had a dollar sign in front of it we would need to extract the argument out.
 		if(p[0] == '>') //This is for redirection
 		{
-
-
-			int fd=open("afile2.txt", O_WRONLY|O_CREAT|O_TRUNC, 0600);
-			
+			char *file = strtok (p, ">");			
+			int fd=open(file, O_WRONLY|O_CREAT|O_TRUNC, 0600);
 			if (fd < 0){ exit(1);}
 			dup2(fd, 1);
 			close(fd);
+
+			
 			
 		}
-		else if(p[0] == '|') {
-		
-			int pid1, pid2;
-			int pp[2];
-			if (pipe(pp) < 0) perror("error piping");
-				pid1=fork();
-			if (pid1==0) { // execute foo
-				dup2(pp[1], 1);
-				close(pp[0]);
-				close(pp[1]);
-
-			}
-			pid2=fork();
-			if (pid2==0) { // execute foo15a
-				dup2(pp[0], 0);
-				close(pp[0]);
-				close(pp[1]);
-
-			}
-		close(pp[0]);
-		close(pp[1]);
-			
-			
+		else if(p[0] == '<') //This is for redirection
+		{
+			p = strtok (p, "<");
+			array[i++] = p; 
 		}
 		else {
-        array[i++] = p;
+       	 	array[i++] = p;
 		}
 
+      	 	p = strtok (NULL, " ");
 
-        p = strtok (NULL, " ");
-		
     }
-	
-	
+	if( i == 3 ){
+		if(array[1][0] == '|')
+		{
+		int pid1, pid2;
+		int pp[2];
+		if (pipe(pp) < 0);
+		pid1=fork();
+		if (pid1==0) { // execute foo
+		dup2(pp[1], 1);
+		close(pp[0]);
+		close(pp[1]);
+
+		//this is pipelineing actual ls until ours works
+		char *cmd = "ls";
+		char *argv[2];
+		argv[0] = "ls";
+		argv[1] = NULL;
+		execvp(cmd, argv);
+		}
+		pid2=fork();
+		if (pid2==0) { // execute foo15a
+		dup2(pp[0], 0);
+		close(pp[0]);
+		close(pp[1]);
+
+		char *cmd = "./pipeline2";
+		char *argv[2];
+		argv[0] = "pipline";
+		argv[1] = NULL;
+		execvp(cmd, argv);
+		}
+		close(pp[0]);
+		close(pp[1]);
+
+		}
+	}
+	if(i == 0){
+	 	//printf("yay\n");
+		i++;
+		array[0] = "0";
+	}
 
 	array[i] = NULL;
-
-
-
 	
-  
-
 }
 
 void sh_execute(char **array)
 {
 
-		//printf("Below is array 0\n");
-		//printf("%s\n",array[0]);
-
-	
-		pid_t pid=fork();
-    if (pid==0) { //child process
-		//char *cmd = "./";
+	pid_t pid=fork();
+    if (pid==0 && array[0] != "exit" && array[0] != "0") { //child process
 		char cmd[50];
 		strcpy(cmd, "./");
-		strcat(cmd, array[0]);
+		strcat(cmd, array[0]);	
 
-				
-
-	
 		if(	execvp(cmd, array) == -1){
 			
 			perror("error executing");
 			exit(0);
 		}
-		
-	
     }
-    else { // pid!=0; parent process *
+    else if(pid>0){ // pid!=0; parent process *
         waitpid(pid,0,0); // wait for child to exit 
     }
+	else {
+		exit(0);
+		//do nothing
+	}
+	dup2(saved_stdout, 1);
 }
 
 char *line2(void)
 {
-	
     char *line = NULL;
 	size_t size;
-	//this should get the line and the size of the address.
-    if (getline(&line, &size, stdin) == -1) {
-        printf("No line\n");
-    } else {
-	
+	//this should get the line and the size of the line.
+	int p = getline(&line, &size, stdin);
+    if (p == -1) {
+       printf("No line\n");
+    } else if (p == 1){
+		
+		return NULL;
+	}
+	else{
 	strtok(line, "\n"); //remove a null character
 	return line;
-        //printf("%s\n", line);
     }
+	
 
 	
 }
 
+static char* skipwhite(char* b)
+{
+	//strchr(cmd, ' '); think you can use this to test
+	//while (test for spaces here) ++s;
+	return b;
+}
+
 int main()
 {
+	saved_stdout = dup(1);
 	char *line;
 	char *array[10]; //prolly need to check for number of arguments later.
 	while(1) {
-		
-        printf("$ ");
 	
  	// Run command loop.
   	line = line2();
-
 	
+		
 	sh_split(line, array);
 	
-
 	if(strcmp(array[0], "exit") == 0){ 
-		exit(0);}
-	
+		printf("this is exit\n");
+		//exit(0);
+		exit(0);
+		}	
+
 	sh_execute(array);
 
 	free(line);
-
 	}
-	
 
-	
-
-
-	//sh_execute();    
-	
   	return 0;
 }
