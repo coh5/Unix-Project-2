@@ -82,6 +82,10 @@ int main (int argc, char *argv[]) {
 	      loption(argv);
 	   }
 	}
+	else if(argc > 3) {
+	   printf("myls: Too many arguments: "ls [option] [file or dir]"\n");
+	   return 0;
+        }
 
 	
 	if(argc < 3) {
