@@ -81,6 +81,7 @@ int main (int argc, char *argv[]) {
               }
 	      loption(argv);
 	   }
+	   else printf("myls: Invalid option: Only supports -l");
 	}
 	else if(argc > 3) {
 	   printf("myls: Too many arguments: "ls [option] [file or dir]"\n");
