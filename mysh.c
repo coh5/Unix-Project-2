@@ -60,7 +60,7 @@ void sh_split(char *line, char **array)
 		close(pp[1]);
 
 		//this is pipelineing actual ls until ours works
-		char *cmd = "ls";
+		char *cmd = "./myls";
 		char *argv[2];
 		argv[0] = "ls";
 		argv[1] = NULL;
