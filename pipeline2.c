@@ -6,7 +6,6 @@
 
 // foo15a.c
 int main() {
-printf("this is pipeline2\n");
 char buf[500];
 int len;
 while ((len=read(0, buf, 
