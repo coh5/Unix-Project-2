@@ -48,7 +48,7 @@ int loption(char** argv)
 	int len = strlen(time);
 	if(time[len-1] == '\n') time[len-1] = '\0';
 
-	printf("%c %3o %u %s %s %u %s %s\n", type, rights, link, username, groupname, size, time, basename(argv[1]));
+	printf("%c %3o %u %s %s %u %s %s", type, rights, link, username, groupname, size, time, basename(argv[1]));
 
 	return 0;
 }
@@ -73,13 +73,19 @@ int main (int argc, char *argv[]) {
            dp = opendir(argv[1]);
 	}
 	else if(argc ==3) {
-	   if(strcmp(argv[1], "-l") == 0) loption(argv);
+	   if(strcmp(argv[1], "-l") == 0) {
+              dp = opendir(argv[2]);
+	      if (!dp) {
+	         printf("myls: cannot access %s: No such file or directory\n", argv[2]);
+	         return 0;
+              }
+	      loption(argv);
+	   }
 	}
 
 	
 	if(argc < 3) {
 	   while ((dirp = readdir(dp)) != NULL) count++;
-	   //printf("Count %d", count);
 	   rewinddir(dp);
 	   while ((dirp = readdir(dp)) != NULL) {
 	      if(strcmp(dirp->d_name, ".") == 0 || strcmp(dirp->d_name, "..") == 0);
