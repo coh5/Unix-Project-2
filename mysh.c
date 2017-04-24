@@ -16,50 +16,46 @@ int sh_stoutput(){
 
 void sh_split(char *line, char **array)
 {
+	
     int i = 0; //This is an index for the array
 	
     char *p = strtok (line, " ");
+
 	
-
-
     while (p != NULL)
     {
 		if(p[0] == '>') //This is for redirection
-		{
-			char *file = strtok (p, ">");			
+		{	
+			char *file = strtok (p, ">");
 			int fd=open(file, O_WRONLY|O_CREAT|O_TRUNC, 0600);
 			if (fd < 0){ exit(1);}
 			dup2(fd, 1);
 			close(fd);
-
-			
 			
 		}
 		else if(p[0] == '<') //This is for redirection
-		{
-			p = strtok (p, "<");
-			array[i++] = p; 
+		{	
+			//++p;
+			//array[i++] = p;
 		}
 		else {
        	 	array[i++] = p;
 		}
-
       	 	p = strtok (NULL, " ");
-
     }
+		
 	if( i == 3 ){
-		if(array[1][0] == '|')
+		if(array[0] != NULL && array[1][0] == '|' && array[2] != NULL)
 		{
 		int pid1, pid2;
 		int pp[2];
 		if (pipe(pp) < 0);
 		pid1=fork();
-		if (pid1==0) { // execute foo
+		if (pid1==0) { 
 		dup2(pp[1], 1);
 		close(pp[0]);
 		close(pp[1]);
 
-		//this is pipelineing actual ls until ours works
 		char *cmd = "./myls";
 		char *argv[2];
 		argv[0] = "ls";
@@ -83,24 +79,35 @@ void sh_split(char *line, char **array)
 
 		}
 	}
+
 	if(i == 0){
-	 	//printf("yay\n");
+
 		i++;
 		array[0] = "0";
 	}
 
+
 	array[i] = NULL;
+
+
+	
 	
 }
 
 void sh_execute(char **array)
 {
 
-	pid_t pid=fork();
+			pid_t pid=fork();
     if (pid==0 && array[0] != "exit" && array[0] != "0") { //child process
+		//char *cmd = "./";
 		char cmd[50];
-		strcpy(cmd, "./");
-		strcat(cmd, array[0]);	
+		//*****
+		if(array[0][0] == 'm' && array[0][1] == 'y'){
+			strcpy(cmd, "./");
+			strcat(cmd, array[0]);	}
+		else {
+			strcpy(cmd, array[0]);	
+		}	
 
 		if(	execvp(cmd, array) == -1){
 			
@@ -120,9 +127,10 @@ void sh_execute(char **array)
 
 char *line2(void)
 {
+
     char *line = NULL;
 	size_t size;
-	//this should get the line and the size of the line.
+	//this should get the line and the size of the address.
 	int p = getline(&line, &size, stdin);
     if (p == -1) {
        printf("No line\n");
@@ -135,16 +143,8 @@ char *line2(void)
 	return line;
     }
 	
-
-	
 }
 
-static char* skipwhite(char* b)
-{
-	//strchr(cmd, ' '); think you can use this to test
-	//while (test for spaces here) ++s;
-	return b;
-}
 
 int main()
 {
@@ -155,20 +155,21 @@ int main()
 	
  	// Run command loop.
   	line = line2();
-	
-		
+
 	sh_split(line, array);
-	
 	if(strcmp(array[0], "exit") == 0){ 
 		printf("this is exit\n");
 		//exit(0);
 		exit(0);
-		}	
+		}
+	
+
 
 	sh_execute(array);
 
 	free(line);
 	}
-
+	 
+	
   	return 0;
 }
