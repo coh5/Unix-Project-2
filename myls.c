@@ -17,7 +17,7 @@ int loption(char** argv)
 	
 	struct stat buf;
 	if(lstat(argv[2], &buf) < 0) {
-	   perror("cannot open file");
+	   perror("file cannot be opened");
 	   return 1;
 	}
 	
@@ -25,10 +25,10 @@ int loption(char** argv)
 
 	unsigned int link = buf.st_nlink;
 
-	char username[50];
+	char usrname[50];
 	struct passwd *user = getpwuid(buf.st_uid);
-	strncpy(username, user->pw_name, 49);
-	username[49] = '\0';
+	strncpy(usrname, user->pw_name, 49);
+	usrname[49] = '\0';
 
 	char groupname[50];
 	struct group *grp = getgrgid(buf.st_uid);
@@ -43,7 +43,7 @@ int loption(char** argv)
 	int len = strlen(time);
 	if(time[len-1] == '\n') time[len-1] = '\0';
 
-	printf("%3o %u %s %s %u %s %s", rights, link, username, groupname, size, time, argv[2]);
+	printf("%3o %u %s %s %u %s %s", rights, link, usrname, groupname, size, time, argv[2]);
 
 	return 0;
 }
@@ -130,7 +130,7 @@ int main (int argc, char *argv[]) {
 	   while ((dirp = readdir(dp)) != NULL && i < count) {
 	      argv[2] = sort[i];
 	      loption(argv);
-	      printf("%d\n",i);
+	      printf("\n");
 	      i++;
 	   }
 	   printf("\n");
