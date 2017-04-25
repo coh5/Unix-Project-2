@@ -6,7 +6,18 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
+/*
+     .---.
+    @ @   )   
+    ^     |
+   [|]    | ##
+   /      |####
+  (       |####      
+   \| /   |#BP#
+  / |.'   |### 
+ _\ ``\   )##
+/,,_/,,____#
+*/
 
 int saved_stdout;//For save the standard out
 int sh_stoutput(){
