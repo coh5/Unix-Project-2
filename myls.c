@@ -20,11 +20,6 @@ int loption(char** argv)
 	   perror("cannot open file");
 	   return 1;
 	}
-
-	unsigned char type;
-	if(S_ISDIR(buf.st_mode)) type = 'd';
-	else if (S_ISREG(buf.st_mode)) type = '.';
-	else if (S_ISLNK(buf.st_mode)) type = 'l';
 	
 	unsigned short rights = buf.st_mode & (S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IWGRP|S_IXGRP|S_IROTH|S_IWOTH|S_IXOTH);
 
@@ -48,7 +43,7 @@ int loption(char** argv)
 	int len = strlen(time);
 	if(time[len-1] == '\n') time[len-1] = '\0';
 
-	printf("%c %3o %u %s %s %u %s %s", type, rights, link, username, groupname, size, time, basename(argv[1]));
+	printf("%3o %u %s %s %u %s %s", rights, link, username, groupname, size, time, argv[2]);
 
 	return 0;
 }
@@ -56,26 +51,35 @@ int loption(char** argv)
 int main (int argc, char *argv[]) {
 
 	DIR *dp;
+        FILE *fp;
 	struct dirent *dirp;
     	struct stat sb;
 	int i = 0;
         int j, k = 100, count = -1;
+	int lsolo = 0;
 	char temp[100];
 	char sort[100][100];
 
 	if(argc ==1 || argv[1] == "|") dp = opendir ("./");
 	else if(argc ==2) {
-           dp = opendir(argv[1]);
-	   if (!dp) {
-	      printf("myls: cannot access %s: No such file or directory\n", argv[1]);
-	      return 0;
-           }
-           dp = opendir(argv[1]);
+	   if(strcmp(argv[1], "-l") == 0) {
+	      dp = opendir ("./");
+	      lsolo = 1;
+	   }
+	   else {
+              dp = opendir(argv[1]);
+	      if (!dp) {
+	         printf("myls: cannot access %s: No such directory\n", argv[1]);
+	         return 0;
+              }
+              dp = opendir(argv[1]);
+	   }
 	}
 	else if(argc ==3) {
 	   if(strcmp(argv[1], "-l") == 0) {
               dp = opendir(argv[2]);
-	      if (!dp) {
+	      fp = fopen(argv[2],"r");
+	      if (!dp && !fp) {
 	         printf("myls: cannot access %s: No such file or directory\n", argv[2]);
 	         return 0;
               }
@@ -97,28 +101,43 @@ int main (int argc, char *argv[]) {
 	      else strcpy(sort[i], dirp->d_name);
 	      i++;
 	   }
+
   	for(k=0;k<=1000;k++) {
-  	for(i=0;i<=count;i++)
-           for(j=i+1;j<=count;j++){
-              if(strcmp(sort[i],sort[j])>0) {
-                 strcpy(temp,sort[i]);
-                 strcpy(sort[i],sort[j]);
-                 strcpy(sort[j],temp);
-              }
-           } 
+  	   for(i=0;i<=count;i++)
+              for(j=i+1;j<=count;j++){
+                 if(strcmp(sort[i],sort[j])>0) {
+                    strcpy(temp,sort[i]);
+                    strcpy(sort[i],sort[j]);
+                    strcpy(sort[j],temp);
+                 }
+              } 
 
-}
-
-	i = 0;
-	rewinddir(dp);
- 	while ((dirp = readdir(dp)) != NULL) {
- 	   printf("%s  ", sort[i]);
-	   i++;
-	}
 	}
 
-	printf("\n");
+	if(lsolo == 0) {
+	   i = 0;
+	   rewinddir(dp);
+ 	   while ((dirp = readdir(dp)) != NULL) {
+ 	      printf("%s  ", sort[i]);
+	      i++;
+	   }
+	   printf("\n");
+	}
+	else if(lsolo == 1) {
+	   count = i;
+	   i = 2;
+	   rewinddir(dp);
+	   while ((dirp = readdir(dp)) != NULL && i < count) {
+	      argv[2] = sort[i];
+	      loption(argv);
+	      printf("%d\n",i);
+	      i++;
+	   }
+	   printf("\n");
+	}
+
 
 	closedir(dp);
 	exit(0);
+        }
 }
